@@ -9,3 +9,4 @@ __pycache__
 eStore/settings/local.py
 static_cdn/
 media_cdn/
+static/media/
