@@ -4,6 +4,7 @@ import json
 import datetime
 
 from .models import *
+from .utils import cookie_cart
 
 # Create your views here.
 
@@ -14,9 +15,11 @@ def store(request):
         items = order.orderitem_set.all() # will get all order items with the order parent
         cartItems = order.get_cart_quantity
     else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_quantity': 0}
-        cartItems = order['get_cart_quantity']
+        cookieData = cookie_cart(request)
+        cartItems = cookieData['cartItems']
+        order = cookieData['order']
+        items = cookieData['items']
+
     products = Product.objects.all()
     context = {
         'products': products,
@@ -30,40 +33,10 @@ def cart(request):
         items = order.orderitem_set.all() # will get all order items with the order parent
         cartItems = order.get_cart_quantity
     else:
-        try:
-            cart = json.loads(request.COOKIES['cart'])
-        except:
-            cart = {}
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_quantity': 0, 'shipping': False}
-        cartItems = order['get_cart_quantity']
-
-        for i in cart:
-            try:
-                quantity = cart[i]['quantity']
-                cartItems += quantity
-                product = Product.objects.get(id=i)
-                total = (product.price * quantity)
-                
-                order['get_cart_total'] += total
-                order['get_cart_quantity'] += quantity
-
-                item = {
-                    'product': {
-                        'id': product.id,
-                        'name': product.name,
-                        'price': product.price,
-                        'imageURL': product.imageURL
-                    },
-                    'quantity': quantity,
-                    'get_total': total
-                }
-
-                items.append(item)
-                if not product.digital:
-                    order['shipping'] = True
-            except:
-                pass
+        cookieData = cookie_cart(request)
+        cartItems = cookieData['cartItems']
+        order = cookieData['order']
+        items = cookieData['items']
 
     context = {
         "order": order,
@@ -79,9 +52,10 @@ def checkout(request):
         items = order.orderitem_set.all() # will get all order items with the order parent
         cartItems = order.get_cart_quantity
     else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_quantity': 0, 'shipping': False}
-        cartItems = order['get_cart_quantity']
+        cookieData = cookie_cart(request)
+        cartItems = cookieData['cartItems']
+        order = cookieData['order']
+        items = cookieData['items']
     context = {
         "order": order,
         "items": items,
