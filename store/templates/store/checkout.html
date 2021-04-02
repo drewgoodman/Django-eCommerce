@@ -37,6 +37,7 @@
         <br>
         <div class="box-element hidden" id="payment-info">
             <small>Paypal Options</small>
+            <button id="make-payment">Make payment</button>
         </div>
     </div>
     <div class="col-lg-6">
@@ -53,16 +54,90 @@
                 <div style="flex:1">{{item.quantity}}</div>
             </div>
             {% endfor %}
-            <h5>Items:  {{order.get_cart_quantity}}</h5>
-            <h5>Total:  ${{order.get_cart_total|floatformat:2}}</h5>
+            <h5>Items: {{order.get_cart_quantity}}</h5>
+            <h5>Total: ${{order.get_cart_total|floatformat:2}}</h5>
         </div>
     </div>
 </div>
 <script type="text/javascript">
+
+    const total = "{{order.get_cart_total}}";
+
     const shipping = '{{order.shipping}}';
-    console.log(shipping);
+    const form = document.querySelector('#form');
+    const paymentBtn = document.querySelector('#make-payment');
+
+    const isAnonymous = user == 'AnonymousUser' ? true : false;
+
     if (shipping == 'False') {
-        document.querySelector('#shipping-info').style.setProperty('display','none');
-    } 
+        document.querySelector('#shipping-info').innerHTML = '';
+    }
+
+    if (!isAnonymous) {
+        document.querySelector('#user-info').innerHTML = '';
+    }
+
+    if (shipping == 'False' && !isAnonymous) {
+        // Hide entire form if user is logged in and shipping is false
+        document.querySelector("#form-wrapper").classList.add('hidden');
+        document.querySelector('#payment-info').classList.remove('hidden');
+    }
+
+
+    function handleContinueSubmit(e) {
+        e.preventDefault();
+        console.log('Form submitted');
+        document.querySelector('#form-button').classList.add('hidden');
+        document.querySelector('#payment-info').classList.remove('hidden');
+    }
+
+    function handlePaymentSubmit() {
+        const userFormData = {
+            'name': null,
+            'email': null,
+            'total': total
+        }
+
+        const shippingInfo = {
+            'address': null,
+            'city': null,
+            'state': null,
+            'zipcode': null
+        }
+
+        if (shipping != 'False') {
+            shippingInfo.address = form.address.value;
+            shippingInfo.city = form.city.value;
+            shippingInfo.state = form.state.value;
+            shippingInfo.zipcode = form.zipcode.value;
+        }
+
+        if (isAnonymous) {
+            userFormData.name = form.name.value;
+            userFormData.email = form.email.value;
+        }
+
+        const url = '/process_order/'
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ 'userFormData': userFormData, 'shippingInfo': shippingInfo })
+        })
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                console.log('Data: ', data)
+                alert("Transaction completed");
+                window.location.href = "{% url 'store' %}";
+            })
+    }
+
+    form.addEventListener('submit', handleContinueSubmit);
+    paymentBtn.addEventListener('click', handlePaymentSubmit);
+
 </script>
 {% endblock content %}
