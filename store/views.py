@@ -16,6 +16,7 @@ def cart(request):
         items = order.orderitem_set.all() # will get all order items with the order parent
     else:
         items = []
+        order = {'get_cart_total': 0, 'get_cart_quantity': 0}
     context = {
         "order": order,
         "items": items
@@ -23,5 +24,15 @@ def cart(request):
     return render(request, 'store/cart.html', context)
 
 def checkout(request):
-    context = {}
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all() # will get all order items with the order parent
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_quantity': 0}
+    context = {
+        "order": order,
+        "items": items
+        }
     return render(request, 'store/checkout.html', context)
