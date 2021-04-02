@@ -7,8 +7,19 @@ from .models import *
 # Create your views here.
 
 def store(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all() # will get all order items with the order parent
+        cartItems = order.get_cart_quantity
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_quantity': 0}
+        cartItems = order['get_cart_quantity']
     products = Product.objects.all()
-    context = {'products': products}
+    context = {
+        'products': products,
+        'cartItems': cartItems}
     return render(request, 'store/store.html', context)
 
 def cart(request):
@@ -16,12 +27,15 @@ def cart(request):
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all() # will get all order items with the order parent
+        cartItems = order.get_cart_quantity
     else:
         items = []
         order = {'get_cart_total': 0, 'get_cart_quantity': 0}
+        cartItems = order['get_cart_quantity']
     context = {
         "order": order,
-        "items": items
+        "items": items,
+        "cartItems": cartItems
         }
     return render(request, 'store/cart.html', context)
 
@@ -30,12 +44,15 @@ def checkout(request):
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all() # will get all order items with the order parent
+        cartItems = order.get_cart_quantity
     else:
         items = []
         order = {'get_cart_total': 0, 'get_cart_quantity': 0}
+        cartItems = order['get_cart_quantity']
     context = {
         "order": order,
-        "items": items
+        "items": items,
+        "cartItems": cartItems
         }
     return render(request, 'store/checkout.html', context)
 
