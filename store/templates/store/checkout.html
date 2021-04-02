@@ -58,4 +58,11 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+    const shipping = '{{order.shipping}}';
+    console.log(shipping);
+    if (shipping == 'False') {
+        document.querySelector('#shipping-info').style.setProperty('display','none');
+    } 
+</script>
 {% endblock content %}
