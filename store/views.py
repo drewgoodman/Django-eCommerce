@@ -30,9 +30,33 @@ def cart(request):
         items = order.orderitem_set.all() # will get all order items with the order parent
         cartItems = order.get_cart_quantity
     else:
+        try:
+            cart = json.loads(request.COOKIES['cart'])
+        except:
+            cart = {}
         items = []
-        order = {'get_cart_total': 0, 'get_cart_quantity': 0}
+        order = {'get_cart_total': 0, 'get_cart_quantity': 0, 'shipping': False}
         cartItems = order['get_cart_quantity']
+
+        for i in cart:
+            quantity = cart[i]['quantity']
+            cartItems += quantity
+            product = Product.objects.get(id=i)
+            total = (product.price * quantity)
+            order['get_cart_total'] += total
+            order['get_cart_quantity'] += quantity
+            item = {
+                'product': {
+                    'id': product.id,
+                    'name': product.name,
+                    'price': product.price,
+                    'imageURL': product.imageURL
+                },
+                'quantity': quantity,
+                'get_total': total
+            }
+            items.append(item)
+
     context = {
         "order": order,
         "items": items,

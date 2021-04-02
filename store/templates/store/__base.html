@@ -48,11 +48,14 @@
 
         var cart = JSON.parse(getCookie('cart'));
 
+        function updateCartCookie(newCart) {
+            document.cookie = 'cart=' + JSON.stringify(newCart) + ";domain=;path=/";
+        }
+
         if(!cart) {
             cart = {};
-            document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/";
+            updateCartCookie(cart);
         }
-        console.log(cart);
 
     </script>
 </head>

@@ -5,14 +5,30 @@ function clickCartBtn() {
     var action = this.dataset.action;
 
     if(user == 'AnonymousUser') {
-        console.info('user is not authenticated')
+        addCookieItem(productId, action);
     } else {
         updateUserOrder(productId, action);
     }
 }
 
+function addCookieItem(productId, action) {
+    if (action == 'add') {
+        if(!cart[productId]) {
+            cart[productId] = {'quantity': 1};
+        } else {
+            cart[productId]['quantity'] += 1;
+        }
+    } else if (action == 'remove') {
+        cart[productId]['quantity'] -= 1;
+        if (cart[productId]['quantity'] <= 0) {
+            delete cart[productId];
+        }
+    }
+    updateCartCookie(cart);
+    location.reload();
+}
+
 function updateUserOrder(productId, action) {
-    console.info('user is authenticated, send data')
     var url = '/update_item/'
     fetch(url, {
         method: 'POST',
@@ -26,7 +42,6 @@ function updateUserOrder(productId, action) {
         return response.json();
     })
     .then((data) => {
-        console.log('Data: ', data)
         location.reload();
     })
 }
