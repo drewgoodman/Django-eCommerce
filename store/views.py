@@ -4,21 +4,15 @@ import json
 import datetime
 
 from .models import *
-from .utils import cookie_cart
+from .utils import cartData
 
 # Create your views here.
 
 def store(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        items = order.orderitem_set.all() # will get all order items with the order parent
-        cartItems = order.get_cart_quantity
-    else:
-        cookieData = cookie_cart(request)
-        cartItems = cookieData['cartItems']
-        order = cookieData['order']
-        items = cookieData['items']
+    data = cartData(request)
+    cartItems = data['cartItems']
+    order = data['order']
+    items = data['items']
 
     products = Product.objects.all()
     context = {
@@ -27,16 +21,10 @@ def store(request):
     return render(request, 'store/store.html', context)
 
 def cart(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        items = order.orderitem_set.all() # will get all order items with the order parent
-        cartItems = order.get_cart_quantity
-    else:
-        cookieData = cookie_cart(request)
-        cartItems = cookieData['cartItems']
-        order = cookieData['order']
-        items = cookieData['items']
+    data = cartData(request)
+    cartItems = data['cartItems']
+    order = data['order']
+    items = data['items']
 
     context = {
         "order": order,
@@ -45,23 +33,20 @@ def cart(request):
         }
     return render(request, 'store/cart.html', context)
 
+
 def checkout(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        items = order.orderitem_set.all() # will get all order items with the order parent
-        cartItems = order.get_cart_quantity
-    else:
-        cookieData = cookie_cart(request)
-        cartItems = cookieData['cartItems']
-        order = cookieData['order']
-        items = cookieData['items']
+    data = cartData(request)
+    cartItems = data['cartItems']
+    order = data['order']
+    items = data['items']
+
     context = {
         "order": order,
         "items": items,
         "cartItems": cartItems
         }
     return render(request, 'store/checkout.html', context)
+
 
 def updateItem(request):
     data = json.loads(request.body)
@@ -85,6 +70,7 @@ def updateItem(request):
         orderItem.delete()
 
     return JsonResponse('Item was added', safe=False)
+
 
 def processOrder(request):
     transaction_id = datetime.datetime.now().timestamp()
