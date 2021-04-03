@@ -88,7 +88,10 @@ def processOrder(request):
     total = float(data['userFormData']['total'])
     order.transaction_id = transaction_id
 
-    if total == order.get_cart_total: # check backend data against front end data being passed for integrity
+    print("Total",total)
+    print('Cart Total:',order.get_cart_total)
+    if total == float(order.get_cart_total): # check backend data against front end data being passed for integrity
+        print("Complete!")
         order.complete = True
     order.save()
 
