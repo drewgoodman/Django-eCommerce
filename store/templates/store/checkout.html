@@ -86,7 +86,6 @@
 
     function handleContinueSubmit(e) {
         e.preventDefault();
-        console.log('Form submitted');
         document.querySelector('#form-button').classList.add('hidden');
         document.querySelector('#payment-info').classList.remove('hidden');
     }
@@ -130,8 +129,9 @@
                 return response.json();
             })
             .then((data) => {
-                console.log('Data: ', data)
                 alert("Transaction completed");
+                cart = {};
+                updateCartCookie(cart);
                 window.location.href = "{% url 'store' %}";
             })
     }
